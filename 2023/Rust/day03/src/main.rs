@@ -1,4 +1,5 @@
 use std::fs;
+use std::collections::HashMap;
 
 fn main() {
     let contents = fs::read_to_string("input.txt").expect("Should have been able to read the file");
@@ -7,9 +8,16 @@ fn main() {
     let p1 = part1(&lines);
     println!("p1: {}", p1);
 
-    let p2 = part2(&lines);
+    let char_matrix = str_to_vec_of_char_vec(&contents);
+    let p2 = part2(&char_matrix);
     println!("p2: {}", p2);
 }
+
+fn str_to_vec_of_char_vec(contents : &str) -> Vec<Vec<char>> {
+    let lines : Vec<&str> = contents.split('\n').filter(|l| l.len() != 0).collect();
+    return lines.iter().map(|l| l.chars().collect()).collect();
+}
+
 
 fn part1(lines : &Vec<&str>) -> u32 {
     let height = lines.len();
@@ -104,8 +112,59 @@ fn part1(lines : &Vec<&str>) -> u32 {
     total
 }
 
-fn part2(lines : &Vec<&str>) -> u32 {
-    0
+
+fn part2(lines : &Vec<Vec<char>>) -> u32 {
+    let mut total = 0;
+    let mut possible = HashMap::new();
+
+    for y in 0..lines.len() {
+
+
+        let mut current_number = 0;
+        let mut good_number = false;
+        let mut star_key = String::from("");
+
+        for x in 0..lines[y].len() {
+            let c = lines[y][x];
+
+            if c.is_digit(10) {
+                current_number = (current_number * 10) + c.to_digit(10).unwrap();
+
+                for sy in -1..=1 {  
+                    for sx in -1..=1 {
+
+                        let cy = (y as i32)+sy;
+                        let cx = (x as i32)+sx;
+
+                        if cy >= 0 && cy < lines.len() as i32 && cx >= 0 && cx < lines[y].len() as i32 {
+                            if lines[cy as usize][cx as usize] == '*' { 
+                                good_number = true;
+                                star_key = String::from(cy.to_string() + "_" + &cx.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+
+            if false == c.is_digit(10) || x == lines[y].len()-1 {
+                if current_number != 0  && good_number {
+
+                    if possible.contains_key(&star_key) {
+                        total += current_number * possible[&star_key];
+                    }
+                    else {
+                        possible.insert(String::from(star_key), current_number);
+                    }
+                }
+
+                current_number = 0;
+                good_number = false;
+                star_key = String::from("");
+            }
+        }
+    }
+
+    total
 }
 
 
@@ -133,7 +192,7 @@ mod tests {
 
     #[test]
     fn part2_test() {
-        let lines : Vec<&str> = "467..114.
+        let contents = "467..114.
 ...*.....
 ..35..633
 ......#..
@@ -142,8 +201,9 @@ mod tests {
 ..592....
 ......755
 ...$.*...
-.664.598.".split("\n").collect();
-        let answer : u32 = part2(&lines);
+.664.598.";
+        let matrix = str_to_vec_of_char_vec(contents);
+        let answer : u32 = part2(&matrix);
         assert_eq!(answer, 467835);
     }
 
