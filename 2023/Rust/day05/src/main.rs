@@ -70,57 +70,59 @@ fn part1(lines : &Vec<&str>) -> i64 {
 fn part2(lines : &Vec<&str>) -> i64 {
     let mut loops : u64 = 0;
     let seeds_one : Vec<&str> = lines[0].split(' ').collect();
-    let mut input_seeds : Vec<i64> = seeds_one[1..].iter().map(|s| s.parse::<i64>().unwrap()).collect();
+    let input_seed_ranges : Vec<i64> = seeds_one[1..].iter().map(|s| s.parse::<i64>().unwrap()).collect();
 
-    let mut min : i64 = i64::MAX;
 
-    let mut w : usize = 0;
-    while w < input_seeds.len() {
-        for x in input_seeds[w]..(input_seeds[w]+input_seeds[w+1]) {
-            loops += 1;
-            if loops % 100000 == 0 {
-                println!("{}", loops);
-            }
-            let mut seed = x;
-
-            let mut section_done = false;
-            let mut i : usize = 3;
-            while i < lines.len() {
-                let line = lines[i];
-                if line == "" {
-                    //end of section
-                    i += 1;
-                    section_done = false;
-                    //println!("{:?}", seeds);
-                    //println!("end of section");
-                }
-                else if section_done == false {
-                    let line_split : Vec<&str> = line.split(' ').collect();
-                    let range_nums : Vec<i64> = line_split.iter().map(|s| s.parse::<i64>().unwrap()).collect();
-                    //println!("{:?}", range_nums);
-
-                    let d_start = range_nums[0];
-                    let i_start = range_nums[1];
-                    let num = range_nums[2];
-
-                    if seed >= i_start && seed < i_start+num {
-                        //println!("{} -> {}", seeds[j], d_start+(seeds[j]-i_start));
-                        seed = d_start+(seed-i_start);
-                        section_done = true;
-                    }
-
-                    //println!("end line");
-                }
-                i += 1;
-            }
-            
-            if seed < min {
-                min = seed;
-            }
+    for num in 0..i64::MAX  {
+        if num != 0 && num % 100000 == 0 {
+            println!("{}", num);
         }
-        w += 2;
+        let mut seed = num;
+
+        let mut section_done = false;
+        let mut i : usize = lines.len()-1;
+        while i >= 3 {
+            let line = lines[i];
+            if line.contains(":") || line == "" {
+                //end of section
+                i -= 1;
+                section_done = false;
+                //println!("{:?}", seeds);
+                //println!("end of section");
+            }
+            else if section_done == false {
+                let line_split : Vec<&str> = line.split(' ').collect();
+                let range_nums : Vec<i64> = line_split.iter().map(|s| {
+                                                                 //println!("--{}", s);
+                                                                  s.parse::<i64>().unwrap()
+                }).collect();
+                //println!("{:?}", range_nums);
+
+                let d_start = range_nums[0];
+                let i_start = range_nums[1];
+                let num = range_nums[2];
+
+                if seed >= d_start && seed < d_start+num {
+                    //println!("{} -> {}", seeds[j], d_start+(seeds[j]-i_start));
+                    seed = i_start+(seed-d_start);
+                    section_done = true;
+                }
+
+                //println!("end line");
+            }
+            i -= 1;
+        }
+
+        let mut w : usize = 0;
+        while w < input_seed_ranges.len() {
+            if seed >= input_seed_ranges[w] && seed < (input_seed_ranges[w]+input_seed_ranges[w+1]) {
+                return num;
+            }
+            w += 2;
+        }
     }
-    min
+
+    0
 }
 
 
