@@ -2,8 +2,13 @@
 
 folder_name=$1;
 
-if [[ "$folder_name" -eq '' ]]; then
+if [[ -z $folder_name ]]; then
     read -p 'Name: ' folder_name
+fi
+
+if [[ -d $folder_name ]]; then
+    echo $folder_name already exists
+    exit 1
 fi
 
 
