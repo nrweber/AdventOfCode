@@ -1,5 +1,6 @@
 use std::fs;
 use std::collections::HashMap;
+use num;
 
 fn main() {
     let contents = fs::read_to_string("input.txt").expect("Should have been able to read the file");
@@ -66,7 +67,7 @@ fn part1(lines : &Vec<&str>) -> i32 {
     jumps
 }
 
-fn part2(lines : &Vec<&str>) -> i32 {
+fn part2(lines : &Vec<&str>) -> u64 {
     let instructions : Vec<char> = lines[0].chars().collect();
 
     let mut current_locations : Vec<String> = Vec::new();
@@ -93,13 +94,18 @@ fn part2(lines : &Vec<&str>) -> i32 {
 
     //println!("{:?}", locs);
 
-    let mut jumps : i32 = 0;
-    let mut all_done = false;
 
-    while all_done == false {
-        all_done = true;
-        for i in 0..current_locations.len() {
-            let mut current_location : &String = &(current_locations[i]);
+    let mut lcm : u64 = 0;
+    for i in 0..current_locations.len() {
+        let mut jumps : u64 = 0;
+        let mut current_location : &String = &(current_locations[i]);
+
+
+        //I had figured out the right way to do this in my head for all the possible chases
+        // but I found out on line that you just need to find the distance to the first Z and
+        // use that to do the lcm calculation.
+        // So, it works but is not the "right" answer.
+        while current_locations[i].ends_with("Z") == false {
             let instruction_key = instructions[(jumps as usize) % instructions.len()];
             if instruction_key == 'R' {
                 current_location = &locs[current_location].right;
@@ -110,20 +116,23 @@ fn part2(lines : &Vec<&str>) -> i32 {
 
             current_locations[i] = current_location.clone();
 
-            if current_locations[i].ends_with("Z") == false {
-                all_done = false;
-            }
 
+            //println!("{:?}", current_locations);
+            jumps += 1;
+
+            //if jumps % 1000000 == 0{
+            //    println!("{}", jumps);
+            //}
         }
-
-        //println!("{:?}", current_locations);
-        jumps += 1;
-
-        if jumps % 100000000 == 0{
-            println!("{}", jumps);
+        //println!("{}", jumps);
+        if lcm == 0 {
+            lcm = jumps;
+        } else {
+            //lcm = (lcm * jumps) / num::integer::gcd(lcm, jumps);
+            lcm = num::integer::lcm(lcm, jumps);
         }
     }
-    jumps
+    lcm
 }
 
 
@@ -168,7 +177,7 @@ ZZZ = (ZZZ, ZZZ)".split("\n").collect();
 22C = (22Z, 22Z)
 22Z = (22B, 22B)
 XXX = (XXX, XXX)".split("\n").collect();
-        let answer : i32 = part2(&lines);
+        let answer : u64 = part2(&lines);
         assert_eq!(answer, 6);
     }
 
